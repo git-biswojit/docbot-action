@@ -22,13 +22,14 @@ on:
 jobs:
   update-docs:
     runs-on: ubuntu-latest
+    env: specify the env you're using (eg:test)
     steps:
       - name: Update Documentation
-        uses: git-biswojit/document-automation-action@v0.0.2
+        uses: git-biswojit/docbot-action@v1
         with:
           document_repo_url: 'your-org/your-docs-repo'
-          document_repo_token: ${{ secrets.DOCS_REPO_TOKEN }}
-          agent_release_token: ${{ secrets.GITHUB_TOKEN }}
+          document_repo_token: ${{ secrets.DOCUMENT_REPO_TOKEN }}
+          agent_release_token: ${{ secrets.AGENT_RELEASE_TOKEN }}
           google_api_key: ${{ secrets.GOOGLE_API_KEY }}
           mongo_db_uri: ${{ secrets.MONGO_DB_URI }}
           db_name: 'your_db_name'
@@ -49,16 +50,17 @@ jobs:
 
 ## 🔧 Setup
 
-### 1. Repository Secrets
+### 1. Secrets
 
-Add these secrets to your repository:
+
+Add these secrets to your :
 
 | Secret | Description |
 |--------|-------------|
-| `DOCS_REPO_TOKEN` | GitHub token with write access to your documentation repository |
+| `DOCUMENT_REPO_TOKEN` | GitHub token with write access to your documentation repository |
+| `AGENT_RELEASE_TOKEN` | Github token with read access to the agent's latest release |
 | `GOOGLE_API_KEY` | Google Gemini API key |
 | `MONGO_DB_URI` | MongoDB connection string |
-| `GITHUB_TOKEN` | GitHub token (usually provided automatically) |
 
 ### 2. Documentation Repository
 
@@ -83,6 +85,7 @@ Set up a MongoDB database to store:
 #### Action Fails to Start
 
 - Check all required secrets are set
+- Check you are providing the respective environment to the run
 - Verify repository permissions
 - Ensure MongoDB is accessible
 
