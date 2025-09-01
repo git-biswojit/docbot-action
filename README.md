@@ -23,8 +23,8 @@ jobs:
   update-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Generate Documentation
-        uses: git-biswojit/readme-automation-action@main
+      - name: Update Documentation
+        uses: git-biswojit/document-automation-action@v0.0.2
         with:
           document_repo_url: 'your-org/your-docs-repo'
           document_repo_token: ${{ secrets.DOCS_REPO_TOKEN }}
