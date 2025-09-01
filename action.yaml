@@ -1,0 +1,83 @@
+name: Update Documentation
+description: Update the documentation for this repository
+author: git-biswojit
+
+inputs:
+  document_repo_url:
+    description: "Document repository URL(owner/repo) to clone"
+    required: true
+  document_repo_token:
+    description: "GitHub token to clone the documentation repository"
+    required: true
+  agent_release_token:
+    description: "Token to download the Python wheel from a private repository"
+    required: true
+  google_api_key:
+    description: "API key for the Google Gemini API"
+    required: true
+  mongo_db_uri:
+    description: "MongoDB connection URI"
+    required: true
+  db_name:
+    description: "Name of the MongoDB database"
+    required: true
+  source_repo_path:
+    description: "Path to the source code repository"
+    required: false
+    default: "api"
+  readme_repo_path:
+    description: "Path to the readme documentation repository"
+    required: false
+    default: "readme-doc"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Checkout Source Code (Current Repo)"
+      uses: actions/checkout@v4
+      with:
+        path: ${{ inputs.source_repo_path }}
+        fetch-depth: 0
+
+    - name: "Clone Documentation Repository (readme)"
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.document_repo_url }}
+        path: ${{ inputs.readme_repo_path }}
+        token: ${{ inputs.document_repo_token }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Download latest wheel from agent repo
+      uses: robinraju/release-downloader@v1.11
+      with:
+        repository: git-biswojit/readme_automation
+        token: ${{ inputs.agent_release_token }}
+        latest: true
+        fileName: '*.whl'
+        out-file-path: wheel_dist
+        extract: false
+
+    - name: Install the wheel
+      shell: bash
+      run: pip install wheel_dist/*.whl
+
+    - name: Run Readme Automation
+      shell: bash
+      env:
+        SOURCE_REPO_PATH: ${{ github.workspace }}/${{ inputs.source_repo_path }}
+        README_REPO_PATH: ${{ github.workspace }}/${{ inputs.readme_repo_path }}
+        GOOGLE_API_KEY: ${{ inputs.google_api_key }}
+        MONGO_DB_URI: ${{ inputs.mongo_db_uri }}
+        DB_NAME: ${{ inputs.db_name }}
+        SOURCE_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+      run: |
+        echo "=== RUNNING THE AGENT ==="
+        start
+
+branding:
+  color: 'blue'
+  icon: 'star'
