@@ -29,8 +29,8 @@ inputs:
     description: "Google Cloud project location (set to 'global' if unsure)"
     required: false
     default: "global"
-  google_application_credentials:
-    description: "Google service account key for ADC (required if using Vertex AI)"
+  sa_key_json:
+    description: "Service Account key JSON (pass from secret)"
     required: false
   google_api_key:
     description: "Gemini API key (required if not using Vertex AI)"
@@ -79,18 +79,23 @@ runs:
       shell: bash
       run: pip install wheel_dist/*.whl
 
+    - name: Configure GOOGLE_APPLICATION_CREDENTIALS from sa_key_json
+      shell: bash
+      run: |
+        echo '${{ inputs.sa_key_json }}' > "$RUNNER_TEMP/gcp-key.json"
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/gcp-key.json" >> "$GITHUB_ENV"
+
     - name: Run Readme Automation
       shell: bash
       env:
-        SOURCE_REPO_PATH: ${{ github.workspace }}/${{ inputs.source_repo_path }}
-        README_REPO_PATH: ${{ github.workspace }}/${{ inputs.readme_repo_path }}
         MONGO_DB_URI: ${{ inputs.mongo_db_uri }}
         DB_NAME: ${{ inputs.db_name }}
         GOOGLE_GENAI_USE_VERTEXAI: ${{ inputs.google_genai_use_vertexai }}
         GOOGLE_CLOUD_PROJECT: ${{ inputs.google_cloud_project }}
         GOOGLE_CLOUD_LOCATION: ${{ inputs.google_cloud_location }}
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ inputs.google_application_credentials }}
         GOOGLE_API_KEY: ${{ inputs.google_api_key }}
+        SOURCE_REPO_PATH: ${{ github.workspace }}/${{ inputs.source_repo_path }}
+        README_REPO_PATH: ${{ github.workspace }}/${{ inputs.readme_repo_path }}
         SOURCE_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
       run: |
         echo "=== RUNNING THE AGENT ==="

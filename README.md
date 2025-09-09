@@ -35,7 +35,7 @@ jobs:
           mongo_db_uri: ${{ secrets.MONGO_DB_URI }}
           db_name: 'your_database_name'
           google_cloud_project: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
-          google_application_credentials: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          sa_key_json: ${{ secrets.GCP_SA_KEY }}
 ```
 
 ## ⚙️ Configuration
@@ -50,7 +50,7 @@ jobs:
 | `google_genai_use_vertexai` | ❌ | Use Vertex AI (`true`) or Gemini API key (`false`) | `true` |
 | `google_cloud_project` | ❌ | Google Cloud project name (required if using Vertex AI) | - |
 | `google_cloud_location` | ❌ | Google Cloud project location | `global` |
-| `google_application_credentials` | ❌ | Google service account key for ADC (required if using Vertex AI) | - |
+| `sa_key_json` | ❌ | Service Account key JSON (used to set `GOOGLE_APPLICATION_CREDENTIALS`) | - |
 | `google_api_key` | ❌ | Gemini API key (required if not using Vertex AI) | - |
 | `source_repo_path` | ❌ | Local path for source repository | `api` |
 | `readme_repo_path` | ❌ | Local path for documentation repository | `readme-doc` |
@@ -106,7 +106,7 @@ Create an environment in your GitHub repository (`Settings > Environments`) and 
 | `AGENT_RELEASE_TOKEN` | GitHub token with read access to the agent's latest release | Always |
 | `MONGO_DB_URI` | MongoDB connection string | Always |
 | `GOOGLE_CLOUD_PROJECT` | Google Cloud project name | Using Vertex AI |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Google service account key (JSON content) | Using Vertex AI |
+| `GCP_SA_KEY` | Google service account key JSON content | Using Vertex AI |
 | `GOOGLE_API_KEY` | Google Gemini API key | Using Gemini API |
 
 ### Configuration Examples
@@ -121,8 +121,16 @@ with:
   mongo_db_uri: ${{ secrets.MONGO_DB_URI }}
   db_name: 'your_database_name'
   google_cloud_project: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
-  google_application_credentials: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+  sa_key_json: ${{ secrets.GCP_SA_KEY }}
 ```
+
+Behind the scenes, the action writes `sa_key_json` to a temp file and exports:
+
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/gcp-key.json
+```
+
+This makes Application Default Credentials available to the agent without you managing files yourself.
 
 #### Using Gemini API Key
 
