@@ -32,9 +32,10 @@ jobs:
           document_repo_url: 'your-org/your-docs-repo'
           document_repo_token: ${{ secrets.DOCUMENT_REPO_TOKEN }}
           agent_release_token: ${{ secrets.AGENT_RELEASE_TOKEN }}
-          google_api_key: ${{ secrets.GOOGLE_API_KEY }}
           mongo_db_uri: ${{ secrets.MONGO_DB_URI }}
           db_name: 'your_database_name'
+          google_cloud_project: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
+          google_application_credentials: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 ```
 
 ## ⚙️ Configuration
@@ -44,9 +45,13 @@ jobs:
 | `document_repo_url` | ✅ | Target documentation repository (`owner/repo`) | - |
 | `document_repo_token` | ✅ | GitHub token with write access to docs repository | - |
 | `agent_release_token` | ✅ | GitHub token with read access to agent releases | - |
-| `google_api_key` | ✅ | Google Gemini API key | - |
 | `mongo_db_uri` | ✅ | MongoDB connection URI | - |
-| `db_name` | ✅ | MongoDB database name | - |
+| `db_name` | ✅ | MongoDB database/collection name | - |
+| `google_genai_use_vertexai` | ❌ | Use Vertex AI (`true`) or Gemini API key (`false`) | `true` |
+| `google_cloud_project` | ❌ | Google Cloud project name (required if using Vertex AI) | - |
+| `google_cloud_location` | ❌ | Google Cloud project location | `global` |
+| `google_application_credentials` | ❌ | Google service account key for ADC (required if using Vertex AI) | - |
+| `google_api_key` | ❌ | Gemini API key (required if not using Vertex AI) | - |
 | `source_repo_path` | ❌ | Local path for source repository | `api` |
 | `readme_repo_path` | ❌ | Local path for documentation repository | `readme-doc` |
 
@@ -70,10 +75,22 @@ Create a MongoDB database to store:
 - Change tracking information
 - Processing state
 
-### 3. Obtain Google Gemini API Key
+### 3. Configure Google AI Services
+
+You have two options for Google AI authentication:
+
+#### Option A: Google Vertex AI (Recommended)
+
+- Set up a Google Cloud Project
+- Enable the Vertex AI API
+- Create a service account with appropriate permissions
+- Download the service account key (JSON file)
+
+#### Option B: Google Gemini API Key
 
 - Navigate to [Google AI Studio](https://aistudio.google.com/apikey)
 - Create a new API key
+- Set `google_genai_use_vertexai: 'false'` in your workflow
 
 ### 4. Get Agent Release Access Token
 
@@ -83,12 +100,42 @@ Request a GitHub token with read access to the agent releases from the dev team.
 
 Create an environment in your GitHub repository (`Settings > Environments`) and add these secrets:
 
-| Secret | Description |
-|--------|-------------|
-| `DOCUMENT_REPO_TOKEN` | GitHub token with write access to your documentation repository |
-| `AGENT_RELEASE_TOKEN` | GitHub token with read access to the agent's latest release |
-| `GOOGLE_API_KEY` | Google Gemini API key |
-| `MONGO_DB_URI` | MongoDB connection string |
+| Secret | Description | Required When |
+|--------|-------------|---------------|
+| `DOCUMENT_REPO_TOKEN` | GitHub token with write access to your documentation repository | Always |
+| `AGENT_RELEASE_TOKEN` | GitHub token with read access to the agent's latest release | Always |
+| `MONGO_DB_URI` | MongoDB connection string | Always |
+| `GOOGLE_CLOUD_PROJECT` | Google Cloud project name | Using Vertex AI |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Google service account key (JSON content) | Using Vertex AI |
+| `GOOGLE_API_KEY` | Google Gemini API key | Using Gemini API |
+
+### Configuration Examples
+
+#### Using Vertex AI (Default)
+
+```yaml
+with:
+  document_repo_url: 'your-org/your-docs-repo'
+  document_repo_token: ${{ secrets.DOCUMENT_REPO_TOKEN }}
+  agent_release_token: ${{ secrets.AGENT_RELEASE_TOKEN }}
+  mongo_db_uri: ${{ secrets.MONGO_DB_URI }}
+  db_name: 'your_database_name'
+  google_cloud_project: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
+  google_application_credentials: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+```
+
+#### Using Gemini API Key
+
+```yaml
+with:
+  document_repo_url: 'your-org/your-docs-repo'
+  document_repo_token: ${{ secrets.DOCUMENT_REPO_TOKEN }}
+  agent_release_token: ${{ secrets.AGENT_RELEASE_TOKEN }}
+  mongo_db_uri: ${{ secrets.MONGO_DB_URI }}
+  db_name: 'your_database_name'
+  google_genai_use_vertexai: 'false'
+  google_api_key: ${{ secrets.GOOGLE_API_KEY }}
+```
 
 ## 🛠️ Troubleshooting
 
