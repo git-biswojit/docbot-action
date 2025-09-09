@@ -12,21 +12,35 @@ inputs:
   agent_release_token:
     description: "Token to download the Python wheel from a private repository"
     required: true
-  google_api_key:
-    description: "API key for the Google Gemini API"
-    required: true
   mongo_db_uri:
     description: "MongoDB connection URI"
     required: true
   db_name:
-    description: "Name of the MongoDB database"
+    description: "Name of the MongoDB database/collection"
     required: true
+  google_genai_use_vertexai:
+    description: "Set to 'false' to use Gemini API key, 'true' to use Vertex AI with service account(default)"
+    required: false
+    default: "true"
+  google_cloud_project:
+    description: "Google Cloud project name (required if using Vertex AI)"
+    required: false
+  google_cloud_location:
+    description: "Google Cloud project location (set to 'global' if unsure)"
+    required: false
+    default: "global"
+  google_application_credentials:
+    description: "Google service account key for ADC (required if using Vertex AI)"
+    required: false
+  google_api_key:
+    description: "Gemini API key (required if not using Vertex AI)"
+    required: false
   source_repo_path:
-    description: "Path to the source code repository"
+    description: "Path to the source code repository (local dev only)"
     required: false
     default: "api"
   readme_repo_path:
-    description: "Path to the readme documentation repository"
+    description: "Path to the readme documentation repository (local dev only)"
     required: false
     default: "readme-doc"
 
@@ -70,9 +84,13 @@ runs:
       env:
         SOURCE_REPO_PATH: ${{ github.workspace }}/${{ inputs.source_repo_path }}
         README_REPO_PATH: ${{ github.workspace }}/${{ inputs.readme_repo_path }}
-        GOOGLE_API_KEY: ${{ inputs.google_api_key }}
         MONGO_DB_URI: ${{ inputs.mongo_db_uri }}
         DB_NAME: ${{ inputs.db_name }}
+        GOOGLE_GENAI_USE_VERTEXAI: ${{ inputs.google_genai_use_vertexai }}
+        GOOGLE_CLOUD_PROJECT: ${{ inputs.google_cloud_project }}
+        GOOGLE_CLOUD_LOCATION: ${{ inputs.google_cloud_location }}
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ inputs.google_application_credentials }}
+        GOOGLE_API_KEY: ${{ inputs.google_api_key }}
         SOURCE_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
       run: |
         echo "=== RUNNING THE AGENT ==="
